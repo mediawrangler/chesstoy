@@ -1358,6 +1358,9 @@ widget.move = function() {
     moves[tmp[0]] = tmp[1];
   }
 
+console.log("moves:");
+console.log(moves);
+
   // calculate position from moves
   var newPos = calculatePositionFromMoves(CURRENT_POSITION, moves);
 
