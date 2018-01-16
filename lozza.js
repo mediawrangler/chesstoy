@@ -1590,7 +1590,7 @@ lozChess.prototype.go = function() {
   bestMoveStr = board.formatMove(this.stats.bestMove,UCI_FMT);
 
   board.makeMove(this.rootNode,this.stats.bestMove);
-
+console.log(this.rootNode);
   this.uci.send('bestmove',bestMoveStr);
 
   this.uci.debug(spec.board + ' ' + spec.turn + ' ' + spec.rights + ' ' + spec.ep);
@@ -2769,6 +2769,102 @@ lozBoard.prototype.compact = function () {
 }
 
 //}}}
+
+
+lozBoard.prototype.checkControl = function(node,side) {
+  node.numMoves    = 0;
+  node.sortedIndex = 0;
+  var controlArr     = [];
+  var b = this.b;
+  //
+  if (side == WHITE) {
+    var pOffsetOrth  = WP_OFFSET_ORTH;
+    var pOffsetDiag1 = WP_OFFSET_DIAG1;
+    var pOffsetDiag2 = WP_OFFSET_DIAG2;
+    var pHomeRank    = 2;
+    var pPromoteRank = 7;
+    var pList        = this.wList;
+    var pCount       = this.wCount;
+  } else {
+    var pOffsetOrth  = BP_OFFSET_ORTH;
+    var pOffsetDiag1 = BP_OFFSET_DIAG1;
+    var pOffsetDiag2 = BP_OFFSET_DIAG2;
+    var pHomeRank    = 7;
+    var pPromoteRank = 2;
+    var pList        = this.bList;
+    var pCount       = this.bCount;
+    var CAPTURE      = IS_W;
+  }
+
+  var next    = 0;
+  var count   = 0;
+  var to      = 0;
+  var fr      = 0;
+  var frObj   = 0;
+  var frPiece = 0;
+  var frMove  = 0;
+  var frRank  = 0;
+
+  while (count < pCount) {
+
+    fr = pList[next];
+    if (!fr) {
+      next++;
+      continue;
+    }
+
+    frObj   = b[fr];
+    frPiece = frObj & PIECE_MASK;
+    frMove  = (frObj << MOVE_FROBJ_BITS) | (fr << MOVE_FR_BITS);
+    frRank  = RANK[fr];
+
+    if (frPiece == PAWN) {
+      frMove |= MOVE_PAWN_MASK;
+      to    = fr + pOffsetDiag1;
+      if (b[to] !== 7) {
+        controlArr.push(to);
+      }
+      //
+      to    = fr + pOffsetDiag2;
+      if (b[to] !== 7) {
+        controlArr.push(to);
+      }
+    } else if (IS_KN[frObj]) {
+      var offsets = OFFSETS[frPiece];
+      var dir     = 0;
+      while (dir < 8) {
+        to    = fr + offsets[dir++];
+        toObj = b[to];
+        if (toObj !== 7) {
+          controlArr.push(to);
+        }
+      }
+    } else {
+      var offsets = OFFSETS[frPiece];
+      var len     = offsets.length;
+      var dir     = 0;
+      while (dir < len) {
+        var offset = offsets[dir++];
+        to     = fr + offset;
+        toObj  = b[to];
+        while (!toObj) {
+          if (toObj !== 7) {
+            controlArr.push(to);
+          }
+          to    += offset;
+          toObj = b[to];
+        }
+        if (toObj !== 7) {
+          controlArr.push(to);
+        }
+      }
+    }
+    next++;
+    count++
+  }
+  return controlArr;
+}
+
 //{{{  .genMoves
 
 lozBoard.prototype.genMoves = function(node, turn) {
@@ -2940,13 +3036,11 @@ lozBoard.prototype.genMoves = function(node, turn) {
         toObj  = b[to];
 
         while (!toObj) {
-
           node.addSlide(frMove | to);
 
           to    += offset;
           toObj = b[to];
         }
-
         if (CAPTURE[toObj])
           node.addCapture(frMove | (toObj << MOVE_TOOBJ_BITS) | to);
       }
@@ -3099,7 +3193,6 @@ lozBoard.prototype.genEvasions = function(node, turn) {
           if (toObj == NULL) {
             if (frObj == myKing || (rayTo > 0 && (rayTo != rayFrom) && !CORNERS[to]))
               node.addSlide(frMove | (toObj << MOVE_TOOBJ_BITS) | to);
-
             continue;
           }
 
@@ -3279,7 +3372,6 @@ lozBoard.prototype.genQMoves = function(node, turn) {
 //{{{  .makeMove
 
 lozBoard.prototype.makeMove = function (node,move) {
-
   this.lozza.stats.nodes++;
 
   var b = this.b;
@@ -5460,6 +5552,9 @@ lozBoard.prototype.playMove = function (moveStr) {
 
   node.cache();
 
+  node.whiteControl = this.checkControl(node, WHITE);
+  node.blackControl = this.checkControl(node, BLACK);
+
   this.genMoves(node, this.turn);
 
   while (move = node.getNextMove()) {
@@ -5709,7 +5804,6 @@ lozNode.prototype.getNextMove = function () {
 //{{{  .addSlide
 
 lozNode.prototype.addSlide = function (move) {
-
   var n = this.numMoves++;
 
   this.moves[n] = move;
