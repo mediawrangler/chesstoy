@@ -12,7 +12,7 @@ var engine      = null;
 var startFrom   = 'startpos';
 var startFromUI = 'start';
 
-lozData.page    = 'play.htm';
+lozData.page    = 'chess.html';
 lozData.idInfo  = '#info';
 lozData.idStats = '#stats';
 
@@ -21,7 +21,8 @@ lozData.idStats = '#stats';
 function lozUpdateBestMove () {
 
   var move = {};
-
+//console.log("lozData");
+//console.log(lozData);
   move.from = lozData.bmFr;
   move.to   = lozData.bmTo;
 
@@ -158,44 +159,44 @@ function getMoveTime () {
 $(function() {
 
   //{{{  init DOM
-  
+
   if (args.t) {
     $('#permove').val(args.t);
     getMoveTime();
   }
-  
+
   $('input').tooltip({delay: {"show": 1000, "hide": 100}});
-  
+
   //}}}
   //{{{  handlers
-  
+
   $('#playw').click(function() {
-  
+
     window.location = lozMakeURL ({
       t : getMoveTime()
     });
-  
+
     return true;
   });
-  
+
   $('#playb').click(function() {
-  
+
     window.location = lozMakeURL ({
       t : getMoveTime(),
       c : 'b'
     });
-  
+
     return true;
   });
-  
+
   $('#analyse').click(function() {
-  
+
     window.open("fen.htm?fen=" + chess.fen(),"_blank");
-  
+
     return false;
   });
-  
-  
+
+
   //}}}
 
   engine           = new Worker(lozData.source);
@@ -252,4 +253,3 @@ $(function() {
   //console.log(args);
 
 });
-

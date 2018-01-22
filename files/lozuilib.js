@@ -146,11 +146,11 @@ function lozStandardRx (e) {
   lozData.tokens  = lozData.message.split(' ');
 
   //{{{  bestmove
-  
+
   if (lozData.tokens[0] == 'bestmove') {
-  
+
     lozUpdateStats();
-  
+
     lozData.bm   = lozGetStr('bestmove','');
     lozData.bmFr = lozData.bm[0] + lozData.bm[1];
     lozData.bmTo = lozData.bm[2] + lozData.bm[3];
@@ -158,48 +158,48 @@ function lozStandardRx (e) {
       lozData.bmPr = lozData.bm[4];
     else
       lozData.bmPr = '';
-  
+
     lozUpdateBestMove();
   }
-  
+
   //}}}
   //{{{  option
-  
+
   else if (lozData.tokens[0] == 'option') {
     ;
   }
-  
+
   //}}}
   //{{{  info string debug
-  
+
   else if (lozData.tokens[0] == 'info' && lozData.tokens[1] == 'string' && lozData.tokens[2] == 'debug') {
-  
+
     lozData.info = '<b>' + lozData.message.replace(/info string debug /,'') + '</b>';
-  
+
     lozUpdateInfo();
   }
-  
+
   //}}}
   //{{{  info string
-  
+
   else if (lozData.tokens[0] == 'info' && lozData.tokens[1] == 'string') {
-  
+
     lozData.info = lozData.message.replace(/info string /,'');
-  
+
     lozUpdateInfo();
   }
-  
+
   //}}}
   //{{{  info
-  
-  
+
+
   else if (lozData.tokens[0] == 'info') {
-  
+
     var pv    = lozData.pv;
     var score = lozData.score;
     var units = lozData.units;
     var depth = lozData.depth;
-  
+
     lozData.mvStr    = lozGetStr('currmove',lozData.mvStr);
     lozData.mvNum    = lozGetInt('currmovenumber',lozData.mvNum);
     lozData.depth    = lozGetInt('depth',lozData.depth);
@@ -211,40 +211,102 @@ function lozStandardRx (e) {
     lozData.time     = lozGetInt('time',lozData.time);
     lozData.nps      = lozGetInt('nps',lozData.nps);
     lozData.hashFull = lozGetInt('hashfull',lozData.hashFull);
-  
+
     lozData.seconds   = (lozData.time/1000).round(2);
     lozData.meganodes = (lozData.nodes/1000000).round(2);
     lozData.mnps      = (lozData.nps/1000000).round(2);
     lozData.kilonodes = (lozData.nodes/1000).round(2);
     lozData.knps      = (lozData.nps/1000).round(2);
-  
+
     lozUpdateStats();
-  
+
     if (pv != lozData.pv || score != lozData.score || units != lozData.units || depth != lozData.depth)
       lozUpdatePV();
   }
-  
+
   //}}}
   //{{{  board
-  
+
   else if (lozData.tokens[0] == 'board') {
-  
+
     lozData.board = lozGetStr('board','');
-  
+
     lozUpdateBoard();
   }
-  
+
+  else if (lozData.tokens[0] == 'control') {
+    var cw   = lozGetStr('white','fail');
+    var cb   = lozGetStr('black','fail');
+    var cwArr = getControlArray('white',cw);
+    var cbArr = getControlArray('black',cb);
+    var control = {};
+    for (var i in cwArr) {
+      let piece = cwArr[i][1];
+      let squareName = cwArr[i][2];
+      if (typeof(control[squareName]) === "undefined") {
+        control[squareName] = {'white':[],'black':[]};
+      }
+      control[squareName]['white'].push(piece);
+    }
+    for (var i in cbArr) {
+      let piece = cbArr[i][1];
+      let squareName = cbArr[i][2];
+      if (typeof(control[squareName]) === "undefined") {
+        control[squareName] = {'white':[],'black':[]};
+      }
+      control[squareName]['black'].push(piece);
+    }
+    var files = ['a','b','c','d','e','f','g','h'];
+    for (var rank = 1; rank <= 8; rank++) {
+      for (var file in files) {
+        var b = "&nbsp";
+        var w = "&nbsp";
+        if (typeof(control[files[file]+rank]) !== "undefined") {
+          b += "<span style='color:#000;background-color:rgba(255,255,255,0.4)'>"+control[files[file]+rank].black.join('')+"</span>";
+          w += "<span style='color:#fff;background-color:rgba(0,0,0,0.4)'>"+control[files[file]+rank].white.join('')+"</span>";
+        }
+        $(".square-"+files[file]+rank+" > .control").html(b+"<br/>"+w);
+      }
+    }
+    //console.log(control);
+    /*
+    for (var sq in control) {
+      var b = "&nbsp;"+control[sq].black.join('');
+      var w = "&nbsp;"+control[sq].white.join('');
+      $(".square-"+sq+" .control").html(b+"<br/>"+w);
+    }
+    */
+  }
+
   //}}}
   //{{{  everything else
-  
+
   else {
-  
+
     lozData.info = lozData.message;
-  
+
     lozUpdateInfo();
   }
-  
+
   //}}}
+}
+
+function getControlArray(color,str144) {
+  var result = [];
+  var names    = ['-','P','N','B','R','Q','K','-'];
+  var files = ['a','b','c','d','e','f','g','h'];
+  let arr = str144.split(",");
+  for (var d in arr) {
+    let data = arr[d].split('|');
+    let piece = data[0];
+    let sq144 = data[1];
+    var quotient = 8-Math.floor((sq144-24)/12);
+    var remainder = (sq144-24)%12-2;
+    var temp = [color,names[piece],files[remainder]+quotient]
+    result.push(temp);
+    //console.log("piece:"+names[piece]+" square:"+files[remainder]+quotient);
+  }
+  return result;
 }
 
 //}}}
@@ -312,4 +374,3 @@ function lozUpdateBoard () {
 }
 
 //}}}
-

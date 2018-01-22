@@ -1591,8 +1591,14 @@ lozChess.prototype.go = function() {
 
   board.makeMove(this.rootNode,this.stats.bestMove);
 console.log(this.rootNode);
+console.log(this.stats.bestMove);
   this.uci.send('bestmove',bestMoveStr);
 
+    var cw = 'white '+board.checkControl(this.rootNode, WHITE);
+    var cb = 'black '+board.checkControl(this.rootNode, BLACK);
+//var cw = 'white '+lozza.rootNode.whiteControl.join();
+//var cb = 'black '+lozza.rootNode.blackControl.join();
+this.uci.send('control',cw,cb);
   this.uci.debug(spec.board + ' ' + spec.turn + ' ' + spec.rights + ' ' + spec.ep);
   this.uci.debug(BUILD + ' ' + spec.depth+'p','|',this.stats.nodesMega+'Mn','|',this.stats.nodes+'n','|',this.stats.timeSec+'s','|',bestMoveStr,'|',board.formatMove(this.stats.bestMove,SAN_FMT));
 }
@@ -2822,12 +2828,12 @@ lozBoard.prototype.checkControl = function(node,side) {
       frMove |= MOVE_PAWN_MASK;
       to    = fr + pOffsetDiag1;
       if (b[to] !== 7) {
-        controlArr.push(to);
+        controlArr.push(frPiece+'|'+to);
       }
       //
       to    = fr + pOffsetDiag2;
       if (b[to] !== 7) {
-        controlArr.push(to);
+        controlArr.push(frPiece+'|'+to);
       }
     } else if (IS_KN[frObj]) {
       var offsets = OFFSETS[frPiece];
@@ -2836,7 +2842,7 @@ lozBoard.prototype.checkControl = function(node,side) {
         to    = fr + offsets[dir++];
         toObj = b[to];
         if (toObj !== 7) {
-          controlArr.push(to);
+          controlArr.push(frPiece+'|'+to);
         }
       }
     } else {
@@ -2849,13 +2855,13 @@ lozBoard.prototype.checkControl = function(node,side) {
         toObj  = b[to];
         while (!toObj) {
           if (toObj !== 7) {
-            controlArr.push(to);
+            controlArr.push(frPiece+'|'+to);
           }
           to    += offset;
           toObj = b[to];
         }
         if (toObj !== 7) {
-          controlArr.push(to);
+          controlArr.push(frPiece+'|'+to);
         }
       }
     }
@@ -5552,9 +5558,6 @@ lozBoard.prototype.playMove = function (moveStr) {
 
   node.cache();
 
-  node.whiteControl = this.checkControl(node, WHITE);
-  node.blackControl = this.checkControl(node, BLACK);
-
   this.genMoves(node, this.turn);
 
   while (move = node.getNextMove()) {
@@ -5581,6 +5584,9 @@ lozBoard.prototype.playMove = function (moveStr) {
     this.unmakeMove(node,move);
     node.uncache();
   }
+
+  node.whiteControl = this.checkControl(node, WHITE);
+  node.blackControl = this.checkControl(node, BLACK);
 
   return false;
 }

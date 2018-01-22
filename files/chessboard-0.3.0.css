@@ -61,10 +61,14 @@
   position: absolute;
 }
 .alpha-d2270 {
-  bottom: 1px;
+  top: 2px;
   right: 3px;
 }
 .numeric-fc462 {
   top: 2px;
   left: 2px;
+}
+.control {
+  position: absolute;
+  bottom: 0px
 }

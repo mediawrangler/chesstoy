@@ -525,7 +525,7 @@ function createElIds() {
       SQUARE_ELS_IDS[square] = square + '-' + createId();
     }
   }
-
+console.log("createElIds");
   // spare pieces
   var pieces = 'KQRBNP'.split('');
   for (var i = 0; i < pieces.length; i++) {
@@ -541,6 +541,7 @@ function createElIds() {
 //------------------------------------------------------------------------------
 
 function buildBoardContainer() {
+  console.log("bbc");
   var html = '<div class="' + CSS.chessboard + '">';
 
   if (cfg.sparePieces === true) {
@@ -580,9 +581,8 @@ function buildBoard(orientation) {
   if (orientation !== 'black') {
     orientation = 'white';
   }
-
   var html = '';
-
+console.log('buildBoard');
   // algebraic notation / orientation
   var alpha = deepCopy(COLUMNS);
   var row = 8;
@@ -618,10 +618,13 @@ function buildBoard(orientation) {
         }
       }
 
+      html += '<div class="control" />';
+
       html += '</div>'; // end .square
 
       squareColor = (squareColor === 'white' ? 'black' : 'white');
     }
+
     html += '<div class="' + CSS.clearfix + '"></div></div>';
 
     squareColor = (squareColor === 'white' ? 'black' : 'white');
@@ -978,7 +981,7 @@ function drawPositionInstant() {
 function drawBoard() {
   boardEl.html(buildBoard(CURRENT_ORIENTATION));
   drawPositionInstant();
-
+console.log("drawBoard");
   if (cfg.sparePieces === true) {
     if (CURRENT_ORIENTATION === 'white') {
       sparePiecesTopEl.html(buildSparePieces('black'));
@@ -1358,9 +1361,6 @@ widget.move = function() {
     moves[tmp[0]] = tmp[1];
   }
 
-console.log("moves:");
-console.log(moves);
-
   // calculate position from moves
   var newPos = calculatePositionFromMoves(CURRENT_POSITION, moves);
 
@@ -1444,7 +1444,6 @@ widget.position = function(position, useAnimation) {
 widget.resize = function() {
   // calulate the new square size
   SQUARE_SIZE = calculateSquareSize();
-
   // set board width
   boardEl.css('width', (SQUARE_SIZE * 8) + 'px');
 

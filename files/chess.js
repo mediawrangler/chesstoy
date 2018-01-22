@@ -1299,6 +1299,8 @@ var Chess = function(fen) {
        * so join together moves
        */
       if (max_width === 0) {
+console.log("pgn result x:");
+console.log(result);
         return result.join('') + moves.join(' ');
       }
 
@@ -1322,7 +1324,8 @@ var Chess = function(fen) {
         result.push(moves[i]);
         current_width += moves[i].length;
       }
-
+console.log("pgn result:");
+console.log(result);
       return result.join('');
     },
 
