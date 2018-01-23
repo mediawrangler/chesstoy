@@ -267,8 +267,10 @@ function lozStandardRx (e) {
           w += "<span style='color:#fff;background-color:rgba(0,0,0,0.5)'>"+control[files[file]+rank].white.join('')+"</span>";
         }
         if (orientation == 'b') {
+          // playing black pieces
           $(".square-"+files[file]+rank+" > .control").html(w+"<br/>"+b);
         } else {
+          // playing white pieces
           $(".square-"+files[file]+rank+" > .control").html(b+"<br/>"+w);
         }
       }

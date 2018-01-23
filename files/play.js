@@ -196,6 +196,19 @@ $(function() {
     return false;
   });
 
+  $('#toggle').click(function() {
+
+    var status = $(".control").css("display");
+    if (status === "block") {
+      status = "none";
+    } else {
+      status = "block";
+    }
+    $(".control").css("display", status);
+
+    return false;
+  });
+
 
   //}}}
 
