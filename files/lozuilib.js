@@ -235,6 +235,7 @@ function lozStandardRx (e) {
   }
 
   else if (lozData.tokens[0] == 'control') {
+    var orientation = lozGetURLArgs().c ? lozGetURLArgs().c : 'w';
     var cw   = lozGetStr('white','fail');
     var cb   = lozGetStr('black','fail');
     var cwArr = getControlArray('white',cw);
@@ -262,10 +263,14 @@ function lozStandardRx (e) {
         var b = "&nbsp";
         var w = "&nbsp";
         if (typeof(control[files[file]+rank]) !== "undefined") {
-          b += "<span style='color:#000;background-color:rgba(255,255,255,0.4)'>"+control[files[file]+rank].black.join('')+"</span>";
-          w += "<span style='color:#fff;background-color:rgba(0,0,0,0.4)'>"+control[files[file]+rank].white.join('')+"</span>";
+          b += "<span style='color:#000;background-color:rgba(255,255,255,0.5)'>"+control[files[file]+rank].black.join('')+"</span>";
+          w += "<span style='color:#fff;background-color:rgba(0,0,0,0.5)'>"+control[files[file]+rank].white.join('')+"</span>";
         }
-        $(".square-"+files[file]+rank+" > .control").html(b+"<br/>"+w);
+        if (orientation == 'b') {
+          $(".square-"+files[file]+rank+" > .control").html(w+"<br/>"+b);
+        } else {
+          $(".square-"+files[file]+rank+" > .control").html(b+"<br/>"+w);
+        }
       }
     }
     //console.log(control);

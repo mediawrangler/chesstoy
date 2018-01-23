@@ -191,7 +191,7 @@ $(function() {
 
   $('#analyse').click(function() {
 
-    window.open("fen.htm?fen=" + chess.fen(),"_blank");
+    window.open("fen.html?fen=" + chess.fen(),"_blank");
 
     return false;
   });
