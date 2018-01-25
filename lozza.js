@@ -1590,15 +1590,16 @@ lozChess.prototype.go = function() {
   bestMoveStr = board.formatMove(this.stats.bestMove,UCI_FMT);
 
   board.makeMove(this.rootNode,this.stats.bestMove);
-console.log(this.rootNode);
-console.log(this.stats.bestMove);
   this.uci.send('bestmove',bestMoveStr);
-
-    var cw = 'white '+board.checkControl(this.rootNode, WHITE);
-    var cb = 'black '+board.checkControl(this.rootNode, BLACK);
-//var cw = 'white '+lozza.rootNode.whiteControl.join();
-//var cb = 'black '+lozza.rootNode.blackControl.join();
-this.uci.send('control',cw,cb);
+  //
+  var cw = 'white '+board.checkControl(this.rootNode, WHITE);
+  var cb = 'black '+board.checkControl(this.rootNode, BLACK);
+  this.uci.send('control',cw,cb);
+  //
+  var xw = 'white '+board.checkCapture(this.rootNode, WHITE);
+  var xb = 'black '+board.checkCapture(this.rootNode, BLACK);
+  this.uci.send('capture',xw,xb);
+  //
   this.uci.debug(spec.board + ' ' + spec.turn + ' ' + spec.rights + ' ' + spec.ep);
   this.uci.debug(BUILD + ' ' + spec.depth+'p','|',this.stats.nodesMega+'Mn','|',this.stats.nodes+'n','|',this.stats.timeSec+'s','|',bestMoveStr,'|',board.formatMove(this.stats.bestMove,SAN_FMT));
 }
@@ -2791,6 +2792,7 @@ lozBoard.prototype.checkControl = function(node,side) {
     var pPromoteRank = 7;
     var pList        = this.wList;
     var pCount       = this.wCount;
+    var CAPTURE      = IS_B;
   } else {
     var pOffsetOrth  = BP_OFFSET_ORTH;
     var pOffsetDiag1 = BP_OFFSET_DIAG1;
@@ -2869,6 +2871,102 @@ lozBoard.prototype.checkControl = function(node,side) {
     count++
   }
   return controlArr;
+}
+
+
+lozBoard.prototype.checkCapture = function(node,side) {
+  node.numMoves    = 0;
+  node.sortedIndex = 0;
+  var captureArr     = [];
+  var b = this.b;
+  //
+  if (side == WHITE) {
+    var pOffsetOrth  = WP_OFFSET_ORTH;
+    var pOffsetDiag1 = WP_OFFSET_DIAG1;
+    var pOffsetDiag2 = WP_OFFSET_DIAG2;
+    var pHomeRank    = 2;
+    var pPromoteRank = 7;
+    var pList        = this.wList;
+    var pCount       = this.wCount;
+    var CAPTURE      = IS_B;
+  } else {
+    var pOffsetOrth  = BP_OFFSET_ORTH;
+    var pOffsetDiag1 = BP_OFFSET_DIAG1;
+    var pOffsetDiag2 = BP_OFFSET_DIAG2;
+    var pHomeRank    = 7;
+    var pPromoteRank = 2;
+    var pList        = this.bList;
+    var pCount       = this.bCount;
+    var CAPTURE      = IS_W;
+  }
+
+  var next    = 0;
+  var count   = 0;
+  var to      = 0;
+  var toObj   = 0;
+  var fr      = 0;
+  var frObj   = 0;
+  var frPiece = 0;
+  var frMove  = 0;
+  var frRank  = 0;
+
+  while (count < pCount) {
+
+    fr = pList[next];
+    if (!fr) {
+      next++;
+      continue;
+    }
+
+    frObj   = b[fr];
+    frPiece = frObj & PIECE_MASK;
+    frMove  = (frObj << MOVE_FROBJ_BITS) | (fr << MOVE_FR_BITS);
+    frRank  = RANK[fr];
+
+    if (frPiece == PAWN) {
+      frMove |= MOVE_PAWN_MASK;
+      to    = fr + pOffsetDiag1;
+      toObj = b[to];
+      if (CAPTURE[toObj]) {
+        captureArr.push(frPiece+'|'+to+'|'+toObj);
+      }
+      //
+      to    = fr + pOffsetDiag2;
+      toObj = b[to];
+      if (CAPTURE[toObj]) {
+        captureArr.push(frPiece+'|'+to+'|'+toObj);
+      }
+    } else if (IS_KN[frObj]) {
+      var offsets = OFFSETS[frPiece];
+      var dir     = 0;
+      while (dir < 8) {
+        to    = fr + offsets[dir++];
+        toObj = b[to];
+        if (CAPTURE[toObj]) {
+          captureArr.push(frPiece+'|'+to+'|'+toObj);
+        }
+      }
+    } else {
+      var offsets = OFFSETS[frPiece];
+      var len     = offsets.length;
+      var dir     = 0;
+      while (dir < len) {
+        var offset = offsets[dir++];
+        to     = fr + offset;
+        toObj  = b[to];
+        while (!toObj) {
+          to    += offset;
+          toObj = b[to];
+        }
+        if (CAPTURE[toObj]) {
+          captureArr.push(frPiece+'|'+to+'|'+toObj);
+        }
+      }
+    }
+    next++;
+    count++
+  }
+  return captureArr;
 }
 
 //{{{  .genMoves
@@ -5585,8 +5683,10 @@ lozBoard.prototype.playMove = function (moveStr) {
     node.uncache();
   }
 
-  node.whiteControl = this.checkControl(node, WHITE);
-  node.blackControl = this.checkControl(node, BLACK);
+  //node.whiteControl = this.checkControl(node, WHITE);
+  //node.blackControl = this.checkControl(node, BLACK);
+  //node.whiteCapture = this.checkCapture(node, WHITE);
+  //node.blackCapture = this.checkCapturel(node, BLACK);
 
   return false;
 }

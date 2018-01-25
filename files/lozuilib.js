@@ -263,8 +263,8 @@ function lozStandardRx (e) {
         var b = "&nbsp";
         var w = "&nbsp";
         if (typeof(control[files[file]+rank]) !== "undefined") {
-          b += "<span style='color:#000;background-color:rgba(255,255,255,0.5)'>"+control[files[file]+rank].black.join('')+"</span>";
-          w += "<span style='color:#fff;background-color:rgba(0,0,0,0.5)'>"+control[files[file]+rank].white.join('')+"</span>";
+          b += "<span class='blackcontrol' style='color:#9f9;background-color:rgba(0,0,0,0.7)'>"+control[files[file]+rank].black.join('')+"</span>";
+          w += "<span class='whitecontrol' style='color:#090;background-color:rgba(255,255,255,0.6)'>"+control[files[file]+rank].white.join('')+"</span>";
         }
         if (orientation == 'b') {
           // playing black pieces
@@ -275,6 +275,7 @@ function lozStandardRx (e) {
         }
       }
     }
+
     //console.log(control);
     /*
     for (var sq in control) {
@@ -283,6 +284,32 @@ function lozStandardRx (e) {
       $(".square-"+sq+" .control").html(b+"<br/>"+w);
     }
     */
+  }
+
+  else if (lozData.tokens[0] === 'capture') {
+    var orientation = lozGetURLArgs().c ? lozGetURLArgs().c : 'w';
+    var xw   = lozGetStr('white','fail');
+    var xb   = lozGetStr('black','fail');
+//      var xwArr = getCaptureArray('white',cw);
+//      var xbArr = getCaptureArray('black',cb);
+
+/*
+
+var wPAWN   = 1;
+var wKNIGHT = 2;
+var wBISHOP = 3;
+var wROOK   = 4;
+var wQUEEN  = 5;
+var wKING   = 6;
+empty = 7
+var bPAWN   = 9;
+var bKNIGHT = 10;
+var bBISHOP = 11;
+var bROOK   = 12;
+var bQUEEN  = 13;
+var bKING   = 14;
+
+*/
   }
 
   //}}}

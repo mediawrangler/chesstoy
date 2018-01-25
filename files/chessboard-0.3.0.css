@@ -70,5 +70,6 @@
 }
 .control {
   position: absolute;
+  display: none;
   bottom: 0px
 }

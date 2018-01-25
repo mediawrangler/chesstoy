@@ -11,6 +11,7 @@ var drag        = true;
 var engine      = null;
 var startFrom   = 'startpos';
 var startFromUI = 'start';
+var hintMode = 0;
 
 lozData.page    = 'chess.html';
 lozData.idInfo  = '#info';
@@ -197,15 +198,34 @@ $(function() {
   });
 
   $('#toggle').click(function() {
-
-    var status = $(".control").css("display");
-    if (status === "block") {
-      status = "none";
-    } else {
-      status = "block";
+    var hintModes = ['off','whitecontrol','blackcontrol','control'];
+    hintMode++;
+    if (hintMode >= hintModes.length) {
+      hintMode = 0;
     }
-    $(".control").css("display", status);
-
+    switch(hintModes[hintMode]) {
+      case "control":
+        $(".control").css("display", "block");
+        $(".whitecontrol").css("display", "inline");
+        $(".blackcontrol").css("display", "inline");
+        break;
+      case "whitecontrol":
+        $(".control").css("display", "block");
+        $(".whitecontrol").css("display", "inline");
+        $(".blackcontrol").css("display", "none");
+        break;
+      case "blackcontrol":
+        $(".control").css("display", "block");
+        $(".whitecontrol").css("display", "none");
+        $(".blackcontrol").css("display", "inline");
+        break;
+      case "off":
+      default:
+        $(".control").css("display", "none");
+        $(".whitecontrol").css("display", "none");
+        $(".blackcontrol").css("display", "none");
+        break;
+    }
     return false;
   });
 
